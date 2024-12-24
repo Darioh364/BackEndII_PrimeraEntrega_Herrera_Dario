@@ -11,3 +11,4 @@ productRouter.put('/:pid', updateProduct) //Actualiza un producto dado su id y p
 productRouter.delete('/:pid', deleteProduct)//Elimina un producto dado su id
 
 export default productRouter
+
