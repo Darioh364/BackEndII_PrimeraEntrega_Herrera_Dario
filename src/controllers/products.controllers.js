@@ -9,12 +9,8 @@ export const getProducts = async (req, res) => {
         const query = metFilter  !== undefined ? {[metFilter]: filter} : {} //Mandar status o category como metodo de filtro
         const orQuery = ord !== undefined ? {price: ord} : {} //mandar asc o desc
 
-        const prods = await productModel.paginate(query, {
-            limit: lim,
-            page: pag,
-            sort: orQuery,
-        });
-
+        const prods = await productModel.paginate(query, { limit: lim, page: pag,orQuery,})
+        console.log(prods)
         res.status(200).render('templates/home', {
             productos: prods.docs,  // Solo los productos
             pagination: {
