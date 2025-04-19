@@ -45,6 +45,8 @@ const io = new Server(server)
 app.use(express.json()) // Para manejar JSON en las peticiones
 app.use(express.urlencoded({ extended: true }))
 
+
+
 app.use(session({
     secret: 'coderSecret', 
     resave: false,

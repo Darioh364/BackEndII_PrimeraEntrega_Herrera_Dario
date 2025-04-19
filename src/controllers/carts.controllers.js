@@ -3,8 +3,7 @@ import cartModel from "../models/cart.model.js";
 export const getCart = async (req, res) => {
     try {
         const cartId = req.params.cid;
-        const cart = await cartModel.findOne({ _id: cartId }).populate('products.id_prod'); // Asegúrate de que el populate se aplique correctamente
-        console.log(cart); // Verifica los datos que recibes
+        const cart = await cartModel.findOne({ _id: cartId }).populate('products.id_prod'); 
 
         res.status(200).render('templates/carts', {
             carts: cart.products // Accede a la propiedad 'products' que contiene los productos en el carrito

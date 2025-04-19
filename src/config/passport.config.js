@@ -4,7 +4,7 @@ import passport from 'passport';
 import local from 'passport-local';
 import { userModel } from '../models/user.model.js';
 import { compareSync } from 'bcrypt';
-
+import { hashSync } from 'bcrypt';
 
 
 const LocalStrategy = local.Strategy;
