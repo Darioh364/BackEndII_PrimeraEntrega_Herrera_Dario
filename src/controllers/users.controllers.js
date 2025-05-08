@@ -1,13 +1,17 @@
 import bcrypt from 'bcrypt';
-import { userModel } from '../models/user.model.js'; 
+import UserRepository from '../repository/UserRepository.js';
+
+
+const userRepository = new UserRepository();
 
 export const registerUser = async (req, res) => {
   const { first_name, last_name, email, age, password } = req.body;
 
   try {
-    const hashedPassword = bcrypt.hashSync(password, 10); // Encripto la contraseña
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
-    const newUser = await userModel.create({
+    // Crear el nuevo usuario
+    const newUser = await userRepository.createUser({
       first_name,
       last_name,
       email,
@@ -15,6 +19,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
 
+    // Retornar la respuesta con el DTO
     res.status(201).json({ message: 'Usuario creado', user: newUser });
   } catch (error) {
     res.status(500).json({ error: 'Error al registrar el usuario' });

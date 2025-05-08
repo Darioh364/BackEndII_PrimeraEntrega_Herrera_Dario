@@ -2,7 +2,7 @@ import passportJWT from 'passport-jwt';
 const { Strategy: JwtStrategy, ExtractJwt } = passportJWT;
 import passport from 'passport';
 import local from 'passport-local';
-import { userModel } from '../models/user.model.js';
+//import { userModel } from '../models/user.model.js';
 import { compareSync } from 'bcrypt';
 import { hashSync } from 'bcrypt';
 
