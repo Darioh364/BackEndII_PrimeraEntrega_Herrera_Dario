@@ -43,7 +43,7 @@ Este proyecto es un **servidor backend para un ecommerce** desarrollado con Node
 
 ## ⚙️ Variables de Entorno (.env)
 
-Debes crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+Deberas crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
 ```env
 JWT_SECRET=miClaveSecreta12345
