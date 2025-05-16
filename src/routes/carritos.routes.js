@@ -1,14 +1,20 @@
 import { Router } from "express";
-import { getCart, createCart, insertProductCart, updateProductsCart, updateQuantityProductCart, deleteCart, deleteProductCart} from "../controllers/carts.controllers.js";
+import { getCart, insertProductCart, updateQuantityProductCart, deleteCart, deleteProductCart, purchaseCart} from "../controllers/carts.controllers.js";
+import { authorizationMiddleware } from '../middleware/authorizationMiddleware.js';
 
 const cartRouter = Router()
+// Ruta protegidaS para el usuario
+cartRouter.post('/:cid/products/:pid', authorizationMiddleware('user'), insertProductCart); // Solo usuarios pueden agregar productos al carrito
+cartRouter.delete('/:cid', authorizationMiddleware('user'), deleteCart);  //Elimino el carrito
+cartRouter.delete('/:cid/products/:pid', deleteProductCart); //Elimino producto del carrito
+cartRouter.put('/:cid/products/:pid', authorizationMiddleware('user'), updateQuantityProductCart);  //Actualizo cantidad de productos
+cartRouter.post('/:cid/purchase', authorizationMiddleware('user'), purchaseCart);
 
-cartRouter.get('/:cid', getCart) //Consultar los productos guardados en un carritp
-cartRouter.post('/', createCart) //Crear un nuevo carrito
-cartRouter.post('/:cid/products/:pid', insertProductCart) //Agregar nuevo producto al carrito
-cartRouter.put('/:cid', updateProductsCart) //Mofidicar totalmente el array de productos del carrito 
-cartRouter.put('/:cid/products/:pid', updateQuantityProductCart)  //Actualizo cantidad de productos
-cartRouter.delete('/:cid', deleteCart)  //Elimino todos los productos del carrito
-cartRouter.delete('/:cid/products/:pid', deleteProductCart) //Elimino producto del carrito
+
+cartRouter.get('/:cid', authorizationMiddleware('user'), getCart); //Consultar los productos guardados en un carrito
+
+
+
+
 
 export default cartRouter
