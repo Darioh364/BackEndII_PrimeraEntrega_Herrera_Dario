@@ -1,27 +1,30 @@
 import bcrypt from 'bcrypt';
-import UserRepository from '../repository/UserRepository.js';
+import jwt from 'jsonwebtoken';
+import UserDao from '../dao/UserDao.js';
+import config from '../config/config.js';
 
 
-const userRepository = new UserRepository();
-
-export const registerUser = async (req, res) => {
-  const { first_name, last_name, email, age, password } = req.body;
-
+export const resetPassword = async (token, newPassword, res) => {
   try {
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    // Verificamos el token
+    const decoded = jwt.verify(token, config.jwtSecret);
+    
+    // Buscamos al usuario por su email
+    const user = await UserDao.getByEmail(decoded.email);
+    if (!user) {
+      return res.status(404).send({ status: 'error', message: 'Usuario no encontrado' });
+    }
 
-    // Crear el nuevo usuario
-    const newUser = await userRepository.createUser({
-      first_name,
-      last_name,
-      email,
-      age,
-      password: hashedPassword,
-    });
+    // Actualizamos la contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // Encriptamos la nueva contraseña
+    user.password = hashedPassword;
+    await user.save();
 
-    // Retornar la respuesta con el DTO
-    res.status(201).json({ message: 'Usuario creado', user: newUser });
+    res.send({ status: 'success', message: 'Contraseña actualizada correctamente' });
+
   } catch (error) {
-    res.status(500).json({ error: 'Error al registrar el usuario' });
+    console.error(error); // Esto puede dar más detalles sobre el error
+    res.status(500).send({ status: 'error', message: 'Error al restablecer la contraseña', error: error.message });
   }
 };
+

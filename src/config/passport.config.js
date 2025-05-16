@@ -2,7 +2,8 @@ import passportJWT from 'passport-jwt';
 const { Strategy: JwtStrategy, ExtractJwt } = passportJWT;
 import passport from 'passport';
 import local from 'passport-local';
-//import { userModel } from '../models/user.model.js';
+import userModel from '../models/user.model.js';
+import cartModel from '../models/cart.model.js';
 import { compareSync } from 'bcrypt';
 import { hashSync } from 'bcrypt';
 
@@ -10,6 +11,7 @@ import { hashSync } from 'bcrypt';
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
+  
   // Estrategia de REGISTRO
   passport.use(
     'register',
@@ -17,20 +19,27 @@ const initializePassport = () => {
       { passReqToCallback: true, usernameField: 'email' },
       async (req, email, password, done) => {
         try {
+           console.log('Estrategia de registro iniciada'); // Verificar si la función es llamada
           const existingUser = await userModel.findOne({ email });
           if (existingUser) {
             return done(null, false, { message: 'Usuario ya registrado' });
           }
 
           const hashedPassword = hashSync(password, 10);
+          const newCart = await cartModel.create({}); // Crear un nuevo carrito vacío
+                
           const newUser = await userModel.create({
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email,
             age: req.body.age,
             password: hashedPassword,
-            role: 'user'
+            role: req.body.role || 'user', // Asignamos el rol por defecto
+            cart: newCart._id // Asignamos el ID del carrito
           });
+
+          console.log('Nuevo carrito creado:', newCart);
+          console.log('Nuevo usuario creado:', newUser);
 
           return done(null, newUser);
         } catch (error) {

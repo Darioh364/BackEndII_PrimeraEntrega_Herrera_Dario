@@ -8,7 +8,6 @@ import productRouter from './routes/productos.routes.js'
 import cartRouter from './routes/carritos.routes.js'
 import multerRouter from './routes/imagenes.routes.js'
 import chatRouter from './routes/chat.routes.js'
-import orderRouter from './routes/orders.routes.js'
 import { getProducts } from './controllers/products.controllers.js'
 import usersRouter from './routes/users.routes.js' // Importar las rutas de usuarios
 import passport from 'passport';
@@ -16,6 +15,7 @@ import initializePassport from './config/passport.config.js';
 import session from 'express-session';
 import sessionRouter from './routes/sessions.router.js';
 import dotenv from 'dotenv';
+import config from './config/config.js';
 dotenv.config(); // Esto carga las variables de entorno del archivo .env
 
 
@@ -34,7 +34,7 @@ const server = app.listen(PORT, () => {
 })
 
 // Conectar a la base de datos de MongoDB Atlas
-await mongoose.connect("mongodb+srv://darioh364:ZoeTeAmoMucho20@cluster0.aufua.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+await mongoose.connect(config.mongoUrl)
     .then(() => console.log("BDD conectada"))
     .catch((e) => console.log("Error al conectar con bdd: ", e))
 
@@ -48,7 +48,7 @@ app.use(express.urlencoded({ extended: true }))
 
 
 app.use(session({
-    secret: 'coderSecret', 
+    secret: 'coderSecret',
     resave: false,
     saveUninitialized: false
 }));
@@ -71,7 +71,6 @@ app.use('/public', express.static(__dirname + '/public')) // Definir la carpeta 
 app.use('/api/products', productRouter)
 app.use('/api/carts', cartRouter)
 app.use('/api/chat', chatRouter)
-app.use('/api/orders', orderRouter)
 app.use('/upload', multerRouter)
 app.get('/', getProducts)
 // Rutas de usuarios

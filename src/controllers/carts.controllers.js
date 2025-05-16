@@ -1,132 +1,165 @@
-import cartModel from "../models/cart.model.js";
+import CartRepository from "../repository/CartRepository.js"; 
+import Ticket from '../models/ticket.model.js';
+
 
 export const getCart = async (req, res) => {
     try {
         const cartId = req.params.cid;
-        const cart = await cartModel.findOne({ _id: cartId }).populate('products.id_prod'); 
+        const cart = await CartRepository.getCartById(cartId); // Usamos el repository en lugar de model
 
-        res.status(200).render('templates/carts', {
-            carts: cart.products // Accede a la propiedad 'products' que contiene los productos en el carrito
-        });
+        if (cart) {
+            res.status(200).render('templates/carts', {
+                carts: cart.products // Accede a la propiedad 'products' que contiene los productos en el carrito
+            });
+        } else {
+            res.status(404).send("Carrito no encontrado");
+        }
 
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
+        res.status(500).send(e);
     }
-}
+};
 
 export const createCart = async (req, res) => {
     try {
-        const respuesta = await cartModel.create({ products: [] })
-        res.status(201).send(respuesta)
+        const newCart = await CartRepository.createCart(); // Usamos el repository
+        res.status(201).send(newCart);
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
+        res.status(500).send(e);
     }
-}
+};
 
 export const insertProductCart = async (req, res) => {
     try {
-        const cartId = req.params.cid
-        const productId = req.params.pid
-        const { quantity } = req.body
-        const cart = await cartModel.findById(cartId) //Como agrego un nuevo producto, no es necesario traer todo via populate
+        const cartId = req.params.cid;
+        const productId = req.params.pid;
+        const { quantity } = req.body;
+
+        const cart = await CartRepository.getCartById(cartId); // Usamos el repository
 
         if (cart) {
-            //Consulto si el producto existe o no en el carrito
-            const indice = cart.products.findIndex(prod => prod.id_prod._id == productId)
-
-            if (indice != -1) { //Producto existe
-                cart.products[indice].quantity = quantity //Actualizo cantidad
-            } else {
-                cart.products.push({ id_prod: productId, quantity: quantity }) //Creo el producto
-            }
-            const mensaje = await cartModel.findByIdAndUpdate(cartId, cart) //Guardando los cambios
-            return res.status(200).send(mensaje)
+            const updatedCart = await CartRepository.addProductToCart(cartId, productId, quantity); // Usamos el repository para actualizar el carrito
+            res.status(200).send(updatedCart);
         } else {
-            res.status(404).send("Carrito no existe")
+            res.status(404).send("Carrito no existe");
         }
-
-
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
+        res.status(500).send(e);
     }
-}
-
-export const updateProductsCart = async (req, res) => {
-    try {
-        const cartId = req.params.cid
-        const { newProducts } = req.body
-        const cart = await cartModel.findOne({ _id: cartId }) //findOne({nombre_atributo: valor}) -> findOne({_id: cartId})
-        cart.products = newProducts
-        cart.save() //Guardo los cambios producidos en el modelo en mi bdd
-        res.status(200).send(cart)
-    } catch (e) {
-        console.log(e);
-        res.status(500).send(e)
-    }
-}
+};
 
 export const updateQuantityProductCart = async (req, res) => {
     try {
-        const cartId = req.params.cid
-        const productId = req.params.pid
-        const { quantity } = req.body
-        const cart = await cartModel.findOne({ _id: cartId }) //findOne({nombre_atributo: valor}) -> findOne({_id: cartId})
-        console.log(productId);
+        const cartId = req.params.cid;
+        const productId = req.params.pid;
+        const { quantity } = req.body;
 
-        const indice = cart.products.findIndex(prod => prod.id_prod._id == productId)
-        console.log(cart.products[0].id_prod._id);
-
-        if (indice != -1) {
-            cart.products[indice].quantity = quantity //Actualizo cantidad
-            cart.save() //Guardo los cambios producidos en el modelo en mi bdd
-            res.status(200).send(cart)
+        const updatedCart = await CartRepository.updateProductQuantity(cartId, productId, quantity); // Usamos el repository
+        if (updatedCart) {
+            res.status(200).send(updatedCart);
         } else {
-            res.status(404).send("Producto no existe")
+            res.status(404).send("Producto no encontrado");
         }
-
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
+        res.status(500).send(e);
     }
-}
-
-
+};
 
 export const deleteProductCart = async (req, res) => {
     try {
-        const cartId = req.params.cid
-        const productId = req.params.pid
-        const cart = await cartModel.findOne({ _id: cartId }) //findOne({nombre_atributo: valor}) -> findOne({_id: cartId})
-        const indice = cart.products.findIndex(prod => prod.id_prod._id == productId)
-        if (indice != -1) {
-            cart.products.splice(indice, 1)
-            cart.save() //Guardo los cambios producidos en el modelo en mi bdd
-            res.status(200).send(cart)
-        } else {
-            res.status(404).send("Producto no existe")
-        }
+        const cartId = req.params.cid;
+        const productId = req.params.pid;
 
+        const updatedCart = await CartRepository.removeProductFromCart(cartId, productId); // Usamos el repository
+        if (updatedCart) {
+            res.status(200).send(updatedCart);
+        } else {
+            res.status(404).send("Producto no encontrado");
+        }
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
+        res.status(500).send(e);
     }
-}
+};
 
 export const deleteCart = async (req, res) => {
     try {
-        const cartId = req.params.cid                          //Atributo - id Referencia
-        const cart = await cartModel.findOne({ _id: cartId }) //findOne({nombre_atributo: valor}) -> findOne({_id: cartId})
-        cart.products = []
-        cart.save()
-        res.status(200).send(cart)
+        const cartId = req.params.cid;
+        const deletedCart = await CartRepository.deleteCart(cartId); // Usamos el repository
+        if (deletedCart) {
+            res.status(200).send(deletedCart);
+        } else {
+            res.status(404).send("Carrito no encontrado");
+        }
     } catch (e) {
         console.log(e);
-        res.status(500).send(e)
-    } 
-}
+        res.status(500).send(e);
+    }
+};
 
+export const purchaseCart = async (req, res) => {
+    try {
+        const cartId = req.params.cid;
 
+        const cart = await CartRepository.getCartById(cartId);
+
+        if (!cart) {
+            return res.status(404).send('Carrito no encontrado');
+        }
+
+        const noStockProducts = [];
+        const purchasableProducts = [];
+        let totalAmount = 0;
+
+        for (const item of cart.products) {
+            const product = item.id_prod;
+            const quantity = item.quantity;
+
+            if (product.stock >= quantity) {
+                product.stock -= quantity;
+                totalAmount += product.price * quantity;
+
+                await product.save();
+                purchasableProducts.push(item); // Se puede comprar, se guarda para el ticket
+            } else {
+                noStockProducts.push(product._id); // No hay stock suficiente
+            }
+        }
+
+        // Solo creamos ticket si hay productos que pudieron comprarse
+        let ticket = null;
+        if (purchasableProducts.length > 0) {
+            ticket = new Ticket({
+                code: `TICKET-${Date.now()}`,
+                purchase_datetime: new Date(),
+                amount: totalAmount,
+                purchaser: req.user.email,
+            });
+
+            await ticket.save();
+        }
+
+        // Eliminar del carrito los productos que se compraron
+        cart.products = cart.products.filter(item =>
+            noStockProducts.includes(item.id_prod._id)
+        );
+
+        await cart.save();
+
+        res.status(200).json({
+            message: purchasableProducts.length > 0
+                ? "Compra procesada parcialmente o completamente"
+                : "No se pudo procesar ningún producto por falta de stock",
+            ticket,
+            noStockProducts
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send('Error al procesar la compra');
+    }
+};
 

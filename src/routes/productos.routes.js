@@ -1,14 +1,16 @@
 import {Router} from 'express'
-
 import { getProducts, getProduct, createProduct, updateProduct, deleteProduct} from '../controllers/products.controllers.js';
+import { authorizationMiddleware } from '../middleware/authorizationMiddleware.js';
 
 const productRouter = Router()
 
 productRouter.get('/', getProducts) // Consultar productos
 productRouter.get('/:pid', getProduct) // Consultar producto via ID
-productRouter.post('/', createProduct) //Crear un nuevo producto
-productRouter.put('/:pid', updateProduct) //Actualiza un producto dado su id y pido los datos a actualizar del cuerpo de la peticion
-productRouter.delete('/:pid', deleteProduct)//Elimina un producto dado su id
+
+// Rutas protegidas para administrar productos
+productRouter.post('/create', authorizationMiddleware('admin'), createProduct); // Solo admin puede crear productos
+productRouter.put('/update/:pid', authorizationMiddleware('admin'), updateProduct); // Solo admin puede actualizar productos
+productRouter.delete('/delete/:pid', authorizationMiddleware('admin'), deleteProduct); // Solo admin puede eliminar productos
 
 export default productRouter
 
